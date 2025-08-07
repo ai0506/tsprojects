@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaylorSwift歌曲收集器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a0a2e, #4b0082, #8a2be2);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+            padding: 20px 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-top: 20px;
+            width: 100%;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #ffd700, #ffffff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 90%;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .counter {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            font-weight: bold;
+        }
+        
+        .counter i {
+            color: #ffd700;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 400px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(45deg, #ffd700, #ff8c00);
+            color: #4b0082;
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .songs-container {
+            width: 100%;
+            max-height: 400px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .song-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            padding: 5px;
+        }
+        
+        .song-item {
+            padding: 15px 20px;
+            border-radius: 15px;
+            animation: slideIn 0.5s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .song-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 100%;
+            background: currentColor;
+        }
+        
+        .song-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .song-item i {
+            font-size: 1.5rem;
+            z-index: 1;
+        }
+        
+        .song-content {
+            flex-grow: 1;
+            min-width: 0; /* 防止内容溢出 */
+            z-index: 1;
+        }
+        
+        .song-title {
+            font-size: 1.2rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        
+        .song-album {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 3px 10px;
+            font-size: 0.8rem;
+            white-space: nowrap; /* 防止专辑标签换行 */
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        .song-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+        }
+        
+        .delete-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #ff6b6b;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .album-colors {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .color-tag {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        /* 专辑特定颜色 */
+        .debut { color: #98FB98; background: rgba(152, 251, 152, 0.15); }
+        .fearless { color: #FFD700; background: rgba(255, 215, 0, 0.15); }
+        .speak-now { color: #9370DB; background: rgba(147, 112, 219, 0.15); }
+        .red { color: #FF4500; background: rgba(255, 69, 0, 0.15); }
+        .nineteen-eighty-nine { color: #87CEEB; background: rgba(135, 206, 235, 0.15); }
+        .reputation { color: #000000; background: rgba(0, 0, 0, 0.15); }
+        .lover { color: #FFB6C1; background: rgba(255, 182, 193, 0.15); }
+        .folklore { color: #C0C0C0; background: rgba(192, 192, 192, 0.15); }
+        .evermore { color: #D2B48C; background: rgba(210, 180, 140, 0.15); }
+        .midnights { color: #641cf3; background: rgba(16, 16, 77, 0.15); }
+        .ttpd { color: #F5F5DC; background: rgba(245, 245, 220, 0.15); }
+        
+        /* 动画定义 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(20px); }
+        }
+        
+        /* 滚动条样式 */
+        .songs-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .songs-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .songs-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.5);
+            border-radius: 10px;
+        }
+        
+        .songs-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.8);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 500px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 90%;
+                justify-content: center;
+                padding: 14px 20px;
+            }
+            
+            .song-item {
+                padding: 12px 15px;
+            }
+            
+            .song-title {
+                font-size: 1rem;
+            }
+            
+            .song-album {
+                font-size: 0.75rem;
+            }
+            
+            .delete-btn {
+                width: 28px;
+                height: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-music"></i>
+            </div>
+            <h1>TaylorSwift歌曲收集器</h1>
+            <p>点击"随机歌曲"按钮，收集不同专辑的歌曲，每张专辑都有独特的色彩主题！</p>
+            
+            <div class="album-colors">
+                <div class="color-tag" style="background: rgba(152, 251, 152, 0.3);"><span class="color-dot" style="background: #98FB98;"></span> Taylor Swift</div>
+                <div class="color-tag" style="background: rgba(255, 215, 0, 0.3);"><span class="color-dot" style="background: #FFD700;"></span> Fearless</div>
+                <div class="color-tag" style="background: rgba(147, 112, 219, 0.3);"><span class="color-dot" style="background: #9370DB;"></span> Speak Now</div>
+                <div class="color-tag" style="background: rgba(255, 69, 0, 0.3);"><span class="color-dot" style="background: #FF4500;"></span> Red</div>
+                <div class="color-tag" style="background: rgba(135, 206, 235, 0.3);"><span class="color-dot" style="background: #87CEEB;"></span> 1989</div>
+                <div class="color-tag" style="background: rgba(0, 0, 0, 0.3); color: white;"><span class="color-dot" style="background: #000000;"></span> reputation</div>
+                <div class="color-tag" style="background: rgba(255, 182, 193, 0.3);"><span class="color-dot" style="background: #FFB6C1;"></span> Lover</div>
+                <div class="color-tag" style="background: rgba(192, 192, 192, 0.3);"><span class="color-dot" style="background: #C0C0C0;"></span> folklore</div>
+                <div class="color-tag" style="background: rgba(210, 180, 140, 0.3);"><span class="color-dot" style="background: #D2B48C;"></span> evermore</div>
+                <div class="color-tag" style="background: rgba(25, 25, 112, 0.3); color: white;"><span class="color-dot" style="background: #191970;"></span> Midnights</div>
+                <div class="color-tag" style="background: rgba(245, 245, 220, 0.3);"><span class="color-dot" style="background: #F5F5DC;"></span> TTPD</div>
+            </div>
+        </div>
+        
+        <div class="counter">
+            <i class="fas fa-heart"></i>
+            <span id="song-count">0</span> 首喜爱的歌曲
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" id="random-btn">
+                <i class="fas fa-random"></i> 随机歌曲
+            </button>
+            <button class="btn btn-secondary" id="clear-btn">
+                <i class="fas fa-trash-alt"></i> 清空列表
+            </button>
+        </div>
+        
+        <div class="songs-container">
+            <div class="song-list" id="song-list">
+                <div class="empty-state">
+                    <p style="text-align: center; opacity: 0.7; padding: 20px;">
+                        <i class="fas fa-music" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                        点击"随机歌曲"开始收集不同专辑的歌曲
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Taylor Swift | 截止至2025.8.8</p>
+        </div>
+    </div>
+
+    <script>
+        // ================ 专辑歌曲变量区 ================
+        // 您可以直接将每张专辑的歌曲列表粘贴到对应的变量中
+        
+        // Taylor Swift (2006)
+        const taylorSwiftSongs = `Tim McGraw
+Teardrops on My Guitar
+A Place in This World
+Cold as You
+The Outside
+Tied Together with a Smile
+Stay Beautiful
+Should've Said No
+Mary's Song (Oh My My My)
+Our Song
+I'm Only Me When I'm with You
+Invisible
+A Perfectly Good Heart`;
+        
+        // Fearless (2008)
+        const fearlessSongs = `Fearless
+Fifteen
+Love Story
+Hey Stephen
+White Horse
+You Belong With Me
+Breathe
+Tell Me Why
+You’re Not Sorry
+The Way I Loved You
+Forever & Always
+The Best Day
+Change
+Jump Then Fall
+Untouchable
+Come In With The Rain
+Superstar
+The Other Side Of The Door
+Today Was A Fairytale
+You All Over Me (From The Vault)
+Mr. Perfectly Fine (From The Vault)
+We Were Happy (From The Vault)
+That's When (From The Vault)
+Don't You (From The Vault)
+Bye Bye Baby (From The Vault)`;
+        
+        // Speak Now (2010)
+        const speakNowSongs = `Mine
+Sparks Fly
+Back To December
+Speak Now
+Dear John
+Mean
+The Story Of Us
+Never Grow Up
+Enchanted
+Better Than Revenge
+Innocent
+Haunted
+Last Kiss
+Long Live
+Ours
+Superman
+Electric Touch (From The Vault)
+When Emma Falls in Love (From The Vault)
+I Can See You (From The Vault)
+Castles Crumbling (From The Vault)
+Foolish One (From The Vault)
+Timeless (From The Vault)`;
+        
+        // Red (2012)
+        const redSongs = `State Of Grace
+Red
+Treacherous
+I Knew You Were Trouble
+All Too Well (5 Minute Version)
+22
+I Almost Do
+We Are Never Ever Getting Back Together
+Stay Stay Stay
+The Last Time
+Holy Ground
+Sad Beautiful Tragic
+The Lucky One
+Everything Has Changed
+Starlight
+Begin Again
+The Moment I Knew
+Come Back...Be Here
+Girl At Home
+Ronan
+Better Man (From The Vault)
+Nothing New (feat. Phoebe Bridgers) 
+Babe (From The Vault)
+Message In A Bottle (From The Vault)
+I Bet You Think About Me (From The Vault)
+Forever Winter (From The Vault)
+Run (From The Vault)
+The Very First Night (From The Vault)
+All Too Well (10 Minute Version)`;
+        
+        // 1989 (2014)
+        const nineteenEightyNineSongs = `Welcome To New York
+Blank Space
+Style
+Out Of The Woods
+All You Had To Do Was Stay
+Shake It Off
+I Wish You Would
+Bad Blood
+Wildest Dreams
+How You Get The Girl
+This Love
+I Know Places
+Clean
+Wonderland
+You Are In Love
+New Romantics
+"Slut!" (From The Vault)
+Say Don't Go (From The Vault)
+Now That We Don't Talk (From The Vault)
+Suburban Legends (From The Vault)
+Is It Over Now? (From The Vault)
+Sweeter Than Fiction`;
+        
+        // reputation (2017)
+        const reputationSongs = `...Ready for It?
+End Game
+I Did Something Bad
+Don't Blame Me
+Delicate
+Look What You Made Me Do
+So It Goes...
+Gorgeous
+Getaway Car
+King of My Heart
+Dancing with Our Hands Tied
+Dress
+This Is Why We Can't Have Nice Things
+Call It What You Want
+New Year's Day`;
+        
+        // Lover (2019)
+        const loverSongs = `I Forgot That You Existed
+Cruel Summer
+Lover
+The Man
+The Archer
+I Think He Knows
+Miss Americana & the Heartbreak Prince
+Paper Rings
+Cornelia Street
+Death by a Thousand Cuts
+London Boy
+Soon You'll Get Better
+False God
+You Need to Calm Down
+Afterglow
+Me!
+It's Nice to Have a Friend
+Daylight`;
+        
+        // folklore (2020)
+        const folkloreSongs = `the 1
+cardigan
+the last great american dynasty
+exile
+my tears ricochet
+mirrorball
+seven
+august
+this is me trying
+illicit affairs
+invisible string
+mad woman
+epiphany
+betty
+peace
+hoax
+the lakes`;
+        
+        // evermore (2020)
+        const evermoreSongs = `willow
+champagne problems
+gold rush
+'tis the damn season
+tolerate it
+no body, no crime
+happiness
+dorothea
+coney island
+ivy
+cowboy like me
+long story short
+marjorie
+closure
+evermore
+right where you left me
+it's time to go`;
+        
+        // Midnights (2022)
+        const midnightsSongs = `Lavender Haze
+Maroon
+Anti-Hero
+Snow on the Beach
+You're on Your Own, Kid
+Midnight Rain
+Question...?
+Vigilante Shit
+Bejeweled
+Labyrinth
+Karma
+Sweet Nothing
+Mastermind
+The Great War
+Bigger Than the Whole Sky
+Paris
+High Infidelity
+Glitch
+Would've, Could've, Should've
+Dear Reader`;
+        
+        // The Tortured Poets Department (2024)
+        const ttpdSongs = `Fortnight
+The Tortured Poets Department
+My Boy Only Breaks His Favorite Toys
+Down Bad
+So Long, London
+But Daddy I Love Him
+Fresh Out The Slammer
+Florida!!!
+Guilty as Sin?
+Who’s Afraid of Little Old Me?
+I Can Fix Him (No Really I Can)
+loml
+I Can Do It With a Broken Heart
+The Smallest Man Who Ever Lived
+The Alchemy
+Clara Bow
+The Black Dog
+imgonnagetyouback
+The Albatross
+Chloe or Sam or Sophia or Marcus
+How Did It End?
+So High School
+I Hate It Here
+thankK you alMee
+I Look in People’s Windows
+The Prophecy
+Cassandra
+Peter
+The Bolter
+Robin
+The Manuscript`;
+        
+        // ================ 数据处理部分 ================
+        // 专辑颜色映射
+        const albumColors = {
+            "Taylor Swift": "debut",
+            "Fearless": "fearless",
+            "Speak Now": "speak-now",
+            "Red": "red",
+            "1989": "nineteen-eighty-nine",
+            "reputation": "reputation",
+            "Lover": "lover",
+            "folklore": "folklore",
+            "evermore": "evermore",
+            "Midnights": "midnights",
+            "The Tortured Poets Department": "ttpd"
+        };
+        
+        // 专辑中文名映射
+        const albumChineseNames = {
+            "Taylor Swift": "泰勒·斯威夫特",
+            "Fearless": "无畏",
+            "Speak Now": "爱的告白",
+            "Red": "红",
+            "1989": "1989",
+            "reputation": "名誉",
+            "Lover": "恋人",
+            "folklore": "民间故事",
+            "evermore": "永恒",
+            "Midnights": "午夜",
+            "The Tortured Poets Department": "苦难诗社"
+        };
+        
+        // 将文本歌曲列表转换为对象数组
+        function parseAlbumSongs(albumName, songsText) {
+            return songsText.split('\n')
+                .filter(song => song.trim() !== '')
+                .map(song => ({
+                    id: Date.now() + Math.random().toString(36).substr(2, 9), // 唯一ID
+                    title: song.trim(),
+                    album: albumName
+                }));
+        }
+        
+        // 合并所有专辑的歌曲
+        const taylorSongs = [
+            ...parseAlbumSongs("Taylor Swift", taylorSwiftSongs),
+            ...parseAlbumSongs("Fearless", fearlessSongs),
+            ...parseAlbumSongs("Speak Now", speakNowSongs),
+            ...parseAlbumSongs("Red", redSongs),
+            ...parseAlbumSongs("1989", nineteenEightyNineSongs),
+            ...parseAlbumSongs("reputation", reputationSongs),
+            ...parseAlbumSongs("Lover", loverSongs),
+            ...parseAlbumSongs("folklore", folkloreSongs),
+            ...parseAlbumSongs("evermore", evermoreSongs),
+            ...parseAlbumSongs("Midnights", midnightsSongs),
+            ...parseAlbumSongs("The Tortured Poets Department", ttpdSongs)
+        ];
+        
+        // ================ 应用逻辑部分 ================
+        // DOM元素
+        const randomBtn = document.getElementById('random-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const songList = document.getElementById('song-list');
+        const songCount = document.getElementById('song-count');
+        
+        // 当前歌曲列表
+        let selectedSongs = [];
+        
+        // 随机选择一首歌
+        function getRandomSong() {
+            const availableSongs = taylorSongs.filter(song => 
+                !selectedSongs.some(s => s.id === song.id)
+            );
+            
+            if (availableSongs.length === 0) {
+                alert('所有歌曲已收集完毕！点击"清空列表"重新开始');
+                return null;
+            }
+            
+            const randomIndex = Math.floor(Math.random() * availableSongs.length);
+            return availableSongs[randomIndex];
+        }
+        
+        // 添加歌曲到列表
+        function addSongToList(song) {
+            if (!song) return;
+            
+            selectedSongs.push(song);
+            
+            // 移除空状态
+            if (songList.querySelector('.empty-state')) {
+                songList.innerHTML = '';
+            }
+            
+            const albumClass = albumColors[song.album] || "midnights";
+            const albumChinese = albumChineseNames[song.album] || song.album;
+            
+            const songItem = document.createElement('div');
+            songItem.className = `song-item ${albumClass}`;
+            songItem.dataset.id = song.id; // 存储歌曲ID
+            
+            songItem.innerHTML = `
+                <i class="fas fa-music"></i>
+                <div class="song-content">
+                    <div class="song-title">${song.title}</div>
+                    <span class="song-album">${albumChinese}</span>
+                </div>
+                <div class="song-actions">
+                    <button class="delete-btn" title="删除歌曲">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            songList.appendChild(songItem);
+            updateCounter();
+            
+            // 添加删除事件监听
+            const deleteBtn = songItem.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => deleteSong(song.id));
+            
+            // 滚动到最新添加的歌曲
+            songList.parentElement.scrollTop = songList.parentElement.scrollHeight;
+        }
+        
+        // 删除歌曲
+        function deleteSong(songId) {
+            const songItem = document.querySelector(`.song-item[data-id="${songId}"]`);
+            if (songItem) {
+                // 添加删除动画
+                songItem.style.animation = 'fadeOut 0.3s forwards';
+                
+                // 动画结束后移除元素
+                setTimeout(() => {
+                    songItem.remove();
+                    
+                    // 从选中的歌曲中移除
+                    selectedSongs = selectedSongs.filter(song => song.id !== songId);
+                    updateCounter();
+                    
+                    // 如果列表为空，显示空状态
+                    if (selectedSongs.length === 0) {
+                        showEmptyState();
+                    }
+                }, 300);
+            }
+        }
+        
+        // 显示空状态
+        function showEmptyState() {
+            songList.innerHTML = `
+                <div class="empty-state">
+                    <p style="text-align: center; opacity: 0.7; padding: 20px;">
+                        <i class="fas fa-music" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                        点击"随机歌曲"开始收集不同专辑的歌曲
+                    </p>
+                </div>
+            `;
+        }
+        
+        // 更新计数器
+        function updateCounter() {
+            songCount.textContent = selectedSongs.length;
+        }
+        
+        // 清空列表
+        function clearSongList() {
+            // 添加删除动画到所有歌曲
+            const songItems = document.querySelectorAll('.song-item');
+            songItems.forEach(item => {
+                item.style.animation = 'fadeOut 0.3s forwards';
+            });
+            
+            setTimeout(() => {
+                selectedSongs = [];
+                showEmptyState();
+                updateCounter();
+            }, 300);
+        }
+        
+        // 事件监听
+        randomBtn.addEventListener('click', () => {
+            const song = getRandomSong();
+            addSongToList(song);
+        });
+        
+        clearBtn.addEventListener('click', clearSongList);
+        
+        // 初始化
+        updateCounter();
+    </script>
+</body>
+</html>
