@@ -276,6 +276,7 @@
         .evermore { color: #D2B48C; background: rgba(210, 180, 140, 0.15); }
         .midnights { color: #641cf3; background: rgba(16, 16, 77, 0.15); }
         .ttpd { color: #F5F5DC; background: rgba(245, 245, 220, 0.15); }
+        .showgirl { color: #FF8C00; background: rgba(255, 140, 0, 0.15); } /* 新增：星梦人生专辑颜色 */
         
         /* 动画定义 */
         @keyframes fadeIn {
@@ -373,6 +374,7 @@
                 <div class="color-tag" style="background: rgba(210, 180, 140, 0.3);"><span class="color-dot" style="background: #D2B48C;"></span> evermore</div>
                 <div class="color-tag" style="background: rgba(25, 25, 112, 0.3); color: white;"><span class="color-dot" style="background: #191970;"></span> Midnights</div>
                 <div class="color-tag" style="background: rgba(245, 245, 220, 0.3);"><span class="color-dot" style="background: #F5F5DC;"></span> TTPD</div>
+                <div class="color-tag" style="background: rgba(255, 140, 0, 0.3);"><span class="color-dot" style="background: #FF8C00;"></span> 星梦人生</div> <!-- 新增：星梦人生专辑颜色标签 -->
             </div>
         </div>
         
@@ -661,6 +663,20 @@ The Bolter
 Robin
 The Manuscript`;
         
+        // The Life of a Showgirl (2025) - 新增：星梦人生专辑
+        const showgirlSongs = `The Fate of Ophelia
+Elizabeth Taylor
+Opalite
+Father Figure
+Eldest Daughter
+Ruin the Friendship
+Actually Romantic
+Wi$h Li$t
+Wood
+CANCELLED!
+Honey
+The Life of a Showgirl (Feat. Sabrina Carpenter)`;
+        
         // ================ 数据处理部分 ================
         // 专辑颜色映射
         const albumColors = {
@@ -674,7 +690,8 @@ The Manuscript`;
             "folklore": "folklore",
             "evermore": "evermore",
             "Midnights": "midnights",
-            "The Tortured Poets Department": "ttpd"
+            "The Tortured Poets Department": "ttpd",
+            "The Life of a Showgirl": "showgirl" // 新增：星梦人生专辑颜色映射
         };
         
         // 专辑中文名映射
@@ -689,7 +706,8 @@ The Manuscript`;
             "folklore": "民间故事",
             "evermore": "永恒",
             "Midnights": "午夜",
-            "The Tortured Poets Department": "苦难诗社"
+            "The Tortured Poets Department": "苦难诗社",
+            "The Life of a Showgirl": "星梦人生" // 新增：星梦人生专辑中文名
         };
         
         // 将文本歌曲列表转换为对象数组
@@ -715,7 +733,8 @@ The Manuscript`;
             ...parseAlbumSongs("folklore", folkloreSongs),
             ...parseAlbumSongs("evermore", evermoreSongs),
             ...parseAlbumSongs("Midnights", midnightsSongs),
-            ...parseAlbumSongs("The Tortured Poets Department", ttpdSongs)
+            ...parseAlbumSongs("The Tortured Poets Department", ttpdSongs),
+            ...parseAlbumSongs("The Life of a Showgirl", showgirlSongs) // 新增：合并星梦人生专辑歌曲
         ];
         
         // ================ 应用逻辑部分 ================
